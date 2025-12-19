@@ -23,6 +23,12 @@ export const links: Route.LinksFunction = () => [
   },
 ];
 
+// import pkg from "@syncfusion/ej2-base";
+
+// const { registerLicense } = pkg;
+
+// registerLicense(import.meta.env.VITE_SYNC_FUSION_LICENSE_KEY);
+
 export function Layout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
@@ -32,7 +38,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <Meta />
         <Links />
       </head>
-      <body>
+      <body cz-shortcut-listen="true">
         {children}
         <ScrollRestoration />
         <Scripts />
