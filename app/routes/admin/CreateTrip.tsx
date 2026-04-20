@@ -10,7 +10,7 @@ import { Maps } from "./trips/fields/index";
 
 import { cn } from "~/lib/utils";
 import { account } from "~/appwrite/client";
-import { useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router";
 import { Field } from "@base-ui/react";
 
 type TripFormData = {

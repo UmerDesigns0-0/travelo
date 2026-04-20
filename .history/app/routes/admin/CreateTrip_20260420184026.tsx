@@ -1,6 +1,6 @@
 import { Header } from "components/index";
 import { FieldSet } from "~/components/ui/field";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 
 import { Countries } from "./trips/fields/index";
 import { Duration } from "./trips/fields/index";
@@ -10,7 +10,8 @@ import { Maps } from "./trips/fields/index";
 
 import { cn } from "~/lib/utils";
 import { account } from "~/appwrite/client";
-import { useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router";
+import { Field } from "@base-ui/react";
 
 type TripFormData = {
   country: string;
@@ -28,6 +29,9 @@ const CreateTrip = () => {
   const [selectedCountry, setSelectedCountry] = useState<Country | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
+  const [touchedSubmit, setTouchedSubmit] = useState<boolean>(false);
+  const [FieldErrors, setFieldErrors] = useState<boolean>(false);
+  const submitInProgress = useRef<boolean>(false);
 
   const navigate = useNavigate();
 
@@ -99,6 +103,7 @@ const CreateTrip = () => {
       budget: "",
     },
   });
+  
 
   const requiredFields =
     !formData.country ||
@@ -108,12 +113,30 @@ const CreateTrip = () => {
     !formData.selectedItems.interest ||
     !formData.selectedItems.budget;
 
+  const displayError = touchedSubmit
+    ? requiredFields
+      ? "Please fill out all fields"
+      : error || null
+    : null;
+
+  const durationError =
+    touchedSubmit &&
+    (formData.duration === "" ||
+      Number(formData.duration) < 1 ||
+      Number(formData.duration) > 365);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setTouchedSubmit(true);
     setLoading(true);
 
-    if (requiredFields) {
+    // Prevent multiple submissions
+    if (submitInProgress.current) return;
+    submitInProgress.current = true;
+
+    if (requiredFields || durationError) {
       setLoading(false);
+      setFieldErrors(true);
       return;
     }
 
@@ -130,22 +153,28 @@ const CreateTrip = () => {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          ...formData.selectedItems,
           country: formData.country,
           duration: formData.duration,
+          travelStyle: formData.selectedItems.travelStyle,
+          interest: formData.selectedItems.interest,
+          budget: formData.selectedItems.budget,
+          groupType: formData.selectedItems.groupType,
           userId: user.$id,
         }),
       });
       const result = await response.json();
 
       if (!response.ok || result.error) {
-        console.error("API Error:", result.error);
-        setError(result.details || result.error || "Failed to generate trip");
+        console.error("API Error:", result);
+        const errorMessage =
+          result.details || result.error || "Failed to generate trip";
+        setError(errorMessage);
         return;
       }
 
       if (result?.$id) {
-        navigate(`/admin/trips/${result.$id}`);
+        navigate(`/trips/${result.$id}`);
+        return;
       } else {
         console.error("Unexpected API response:", result);
         setError("Failed to create trip. Please try again.");
@@ -181,59 +210,65 @@ const CreateTrip = () => {
     <main className="all-users wrapper">
       <Header title="Create Trip" description="Generate AI travel plans" />
       <section className="wrapper-lg">
-        <form className="trip-form px-4 py-8 mb-14" onSubmit={handleSubmit}>
+        <form className="trip-form py-8 mb-14" onSubmit={handleSubmit}>
           <FieldSet>
-            <Countries
-              countries={countries}
-              onCountryChange={handleCountryChange}
-              error={error}
-              formData={formData.country}
-            />
-            <Duration
-              label="Duration"
-              placeholder="Enter number of days"
-              description="Enter the number of days you want to spend in the country."
-              error={error}
-              formData={formData.duration}
-              onChange={(value: number) => {
-                setFormData((prevData) => ({
-                  ...prevData,
-                  duration: value,
-                }));
-              }}
-            />
-            <SelectItems
-              onChange={handleSelectItemsChange}
-              error={error}
-              formData={formData.selectedItems}
-            />
-            <Maps selectedCountry={selectedCountry} />
-            <div>
-              <button
-                className={cn(
-                  `flex items-center justify-center gap-2 transition-colors duration-300 ease-in-out bg-blue-500 hover:bg-blue-600 text-sm w-full md:w-sm mx-auto py-3 rounded-md text-white cursor-pointer`,
-                  loading && "cursor-not-allowed bg-blue-400 hover:bg-blue-400",
+            <div className="grid items-center gap-x-2 gap-y-6 grid-cols-1 md:grid-cols-2">
+              <Countries
+                countries={countries}
+                onCountryChange={handleCountryChange}
+                error={FieldErrors}
+                formData={formData.country}
+              />
+              <Duration
+                label="Duration"
+                placeholder="Enter number of days"
+                description="Enter the number of days you want to spend in the country."
+                error={durationError}
+                formData={formData.duration}
+                onChange={(value: number) => {
+                  setFormData((prevData) => ({
+                    ...prevData,
+                    duration: value,
+                  }));
+                }}
+              />
+              <SelectItems
+                onChange={handleSelectItemsChange}
+                error={FieldErrors}
+                formData={formData.selectedItems}
+              />
+              <div className="col-span-1 md:col-span-2">
+                <Maps selectedCountry={selectedCountry} />
+              </div>
+
+              <div className="col-span-1 md:col-span-2">
+                <button
+                  className={cn(
+                    `flex items-center justify-center gap-2 transition-colors duration-300 ease-in-out bg-blue-500 hover:bg-blue-600 text-sm w-full md:w-sm mx-auto py-3 rounded-md text-white cursor-pointer`,
+                    loading &&
+                      "cursor-not-allowed bg-blue-400 hover:bg-blue-400",
+                  )}
+                  type="submit"
+                  disabled={loading}
+                >
+                  {" "}
+                  <img
+                    className={cn(`size-4`, loading && "animate-spin")}
+                    src={
+                      loading
+                        ? "/assets/icons/loader.svg"
+                        : "/assets/icons/magicStar.svg"
+                    }
+                    alt="Loading"
+                  />
+                  {loading ? "Generating..." : "Generate Trip"}
+                </button>
+                {displayError && (
+                  <p className="text-red-500 text-sm text-center transition duration-200 animate-[pulse_1s_ease-in-out]">
+                    {displayError}
+                  </p>
                 )}
-                type="submit"
-                disabled={loading}
-              >
-                {" "}
-                <img
-                  className={cn(`size-4`, loading && "animate-spin")}
-                  src={
-                    loading
-                      ? "/assets/icons/loader.svg"
-                      : "/assets/icons/magicStar.svg"
-                  }
-                  alt="Loading"
-                />
-                {loading ? "Generating..." : "Generate Trip"}
-              </button>
-              {error && (
-                <p className="text-red-500 text-sm text-center transition duration-200 animate-[pulse_1s_ease-in-out]">
-                  {error}
-                </p>
-              )}
+              </div>
             </div>
           </FieldSet>
         </form>
