@@ -1,0 +1,131 @@
+import {
+  ResponsiveContainer,
+  Bar,
+  BarChart,
+  CartesianGrid,
+  XAxis,
+  YAxis,
+  Tooltip,
+  Legend,
+} from "recharts";
+import { formatYAxisValue, pluralize } from "~/lib/myutils";
+
+type ChartProps = {
+  chartHeading?: string;
+  data?: { name: string; value: number }[];
+  tooltipValue?: string;
+  className?: string;
+  isLoading?: boolean;
+};
+
+const Chart = ({
+  chartHeading,
+  data = [],
+  tooltipValue,
+  className,
+  isLoading
+}: ChartProps) => {
+
+  if (isLoading) {
+    return (
+      <div className="w-full mx-auto">
+        <div className="rounded-2xl bg-white p-6 shadow-md dark:bg-slate-900">
+          {chartHeading && (
+            <h3 className="mb-4 text-lg font-semibold text-slate-800">
+              {chartHeading}
+            </h3>
+          )}
+
+          {/* Skeleton bars container */}
+          <div className="flex items-end justify-between gap-0 px-4 h-52">
+            {Array.from({ length: 6 }).map((_, i) => (
+              <div
+                key={i}
+                className="bg-slate-300 rounded-sm animate-pulse"
+                style={{
+                  height: `${30 + Math.random() * 70}%`,
+                  width: "10%", // fixed width for each bar
+                }}
+              />
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+
+  return (
+    <div className="w-full mx-auto">
+      <div className="rounded-2xl bg-white p-6 shadow-md">
+        {chartHeading && (
+          <h3 className="mb-4 text-lg font-semibold text-slate-800">
+            {chartHeading}
+          </h3>
+        )}
+        <div className={`${className}`}>
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart data={data}>
+              <CartesianGrid
+                strokeDasharray="4 4"
+                strokeOpacity={0.5}
+                vertical={false}
+              />
+
+              <XAxis
+                dataKey="name"
+                tickLine={false}
+                axisLine={false}
+                tickFormatter={(value) => value.slice(0, 3) + " " + value.slice(-5)}
+                tick={{ fontSize: 12 }}
+              />
+
+              <YAxis
+                tickLine={false}
+                axisLine={false}
+                tickFormatter={formatYAxisValue}
+                tick={{ fontSize: 12 }}
+                width={40}
+              />
+              {/* <Legend /> */}
+              <Tooltip
+                cursor={{
+                  fill: "#e6f0fa",
+                  opacity: 0.6,
+                }}
+                separator=" "
+                formatter={(value) => {
+                  const count = value as number;
+                  const label = tooltipValue
+                    ? pluralize(count, tooltipValue)
+                    : "";
+                  return [label, `${count}`];
+                }}
+                contentStyle={{
+                  borderRadius: "12px",
+                  border: "1px solid #e2e8f0",
+                  backgroundColor: "white",
+                  fontSize: "14px",
+                }}
+                labelStyle={{
+                  color: "#64748b",
+                  fontSize: "12px",
+                  fontWeight: 500,
+                }}
+                itemStyle={{
+                  color: "#2563eb",
+                  fontSize: "14px",
+                  fontWeight: 600,
+                }}
+              />
+
+              <Bar dataKey="value" fill="#60a5fa" barSize={40} radius={8} />
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default Chart;

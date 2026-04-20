@@ -23,11 +23,11 @@ export const links: Route.LinksFunction = () => [
   },
 ];
 
-// import pkg from "@syncfusion/ej2-base";
-
-// const { registerLicense } = pkg;
-
-// registerLicense(import.meta.env.VITE_SYNC_FUSION_LICENSE_KEY);
+// if (typeof window !== "undefined") {
+//   import("@syncfusion/ej2-base").then((pkg) => {
+//     pkg.registerLicense(import.meta.env.VITE_SYNCFUSION_LICENSE_KEY);
+//   });
+// }
 
 export function Layout({ children }: { children: React.ReactNode }) {
   return (
@@ -35,6 +35,8 @@ export function Layout({ children }: { children: React.ReactNode }) {
       <head>
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <title>Travelo</title>
+        <link rel="icon" href="/assets/icons/logo.svg" />
         <Meta />
         <Links />
       </head>
