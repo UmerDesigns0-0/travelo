@@ -89,16 +89,7 @@
   }
 
   .sign-in-card {
-    @apply flex bg-white flex-col border border-light-100 md:max-w-127.5 rounded-20 py-10 px-6 w-full;
-    header {
-      @apply flex items-center gap-1.5 justify-center;
-    }
-    article {
-      @apply mt-9 mb-[30px] flex flex-col gap-3;
-    }
-  }
-  .get-started-card {
-    @apply flex bg-white flex-col border border-light-100 md:max-w-180 rounded-20 py-10 px-6 w-full;
+    @apply flex bg-white flex-col border border-light-100 md:max-w-[510px] rounded-[20px] py-10 px-6 w-full;
     header {
       @apply flex items-center gap-1.5 justify-center;
     }
@@ -124,9 +115,6 @@
   }
   .auth {
     @apply w-full h-screen flex bg-auth bg-cover bg-no-repeat;
-  }
-  .get-started {
-    @apply w-full h-screen flex bg-get-started bg-cover bg-no-repeat;
   }
 
   

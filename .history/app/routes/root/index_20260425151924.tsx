@@ -1,6 +1,6 @@
 import { redirect } from "react-router";
 import { account } from "~/appwrite/client";
-import { getExistingUser } from "~/appwrite/auth";
+import { getUser } from "~/appwrite/auth";
 import { useNavigate } from "react-router";
 
 export async function clientLoader() {
@@ -24,12 +24,11 @@ const Home = () => {
   const navigate = useNavigate();
 
   const redirectButton = async () => {
-    const user = await account.get();
-    const userStatus = await getExistingUser(user?.$id);
+    const user = await getUser();
 
-    if (user && userStatus?.status === "admin") {
-      navigate("/dashboard");
-    } else if (user && userStatus?.status === "user") {
+    if (user && user.status === "admin") {
+      navigate("/trips");
+    } else if (user && user.status === "user") {
       navigate("/trips");
     } else {
       navigate("/sign-in");

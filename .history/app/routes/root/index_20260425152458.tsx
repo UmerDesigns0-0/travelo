@@ -28,7 +28,7 @@ const Home = () => {
     const userStatus = await getExistingUser(user?.$id);
 
     if (user && userStatus?.status === "admin") {
-      navigate("/dashboard");
+      navigate("/trips");
     } else if (user && userStatus?.status === "user") {
       navigate("/trips");
     } else {
