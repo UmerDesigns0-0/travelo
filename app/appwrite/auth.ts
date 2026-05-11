@@ -70,7 +70,7 @@ export const storeUserData = async () => {
         name: user.name || "Unknown User",
         email: user.email,
         imageUrl: profilePicture || "", // Empty string if no picture
-        status: "user", // Default status from your enum
+        status: "admin", // Default status from your enum
         // ❌ DO NOT SET $createdAt - Appwrite sets this automatically
         // ❌ DO NOT SET $updatedAt - Appwrite sets this automatically
       }
